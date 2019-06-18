@@ -25,6 +25,7 @@ namespace ViaVarejo.ClearSale.FileCopy
         {
             try
             {
+              
                 LoadAppSettings();
                 var interval  = Configuration["Interval:value"];
                 var callback = new TimerCallback(TimerCallback);
@@ -117,6 +118,7 @@ namespace ViaVarejo.ClearSale.FileCopy
         //Time somente para testar o console
         private static void TimerCallback(Object o)
         {
+            Console.WriteLine($"Iniciando processo FTP {DateTime.Now}");
             InitializeProcess();
             GC.Collect();
         }
