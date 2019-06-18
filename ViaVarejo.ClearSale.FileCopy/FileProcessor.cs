@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 namespace ViaVarejo.ClearSale.FileCopy
 {
@@ -14,8 +13,6 @@ namespace ViaVarejo.ClearSale.FileCopy
 
         public bool CheckConnectionFilePath()
         {
-            //string rootPath = new DirectoryInfo(path).Parent.Parent.FullName;
-            //string FiledirectoryPath = Path.GetDirectoryName(path);
             try
             {
                 if (Directory.Exists(path))
