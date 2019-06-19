@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace ViaVarejo.ClearSale.FileCopy.Infra
 {
@@ -44,15 +42,11 @@ namespace ViaVarejo.ClearSale.FileCopy.Infra
                         line = streamReader.ReadLine();
                     }
                 }
-               
+
 
                 return fileList;
             }
-            catch (WebException ex)
-            {
-                var status = ((FtpWebResponse)ex.Response).StatusDescription;
-                throw new Exception(status);
-            }
+
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
@@ -81,11 +75,7 @@ namespace ViaVarejo.ClearSale.FileCopy.Infra
                 }
 
             }
-            catch (WebException ex)
-            {
-                var status = ((FtpWebResponse)ex.Response).StatusDescription;
-                throw new Exception(status);
-            }
+         
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
@@ -106,11 +96,6 @@ namespace ViaVarejo.ClearSale.FileCopy.Infra
                 {
                     return response.StatusDescription;
                 }
-            }
-            catch (WebException ex)
-            {
-                var status = ((FtpWebResponse)ex.Response).StatusDescription;
-                throw new Exception(status);
             }
 
             catch(Exception ex)

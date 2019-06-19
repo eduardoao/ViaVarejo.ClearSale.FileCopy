@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Threading;
@@ -21,20 +22,22 @@ namespace ViaVarejo.ClearSale.FileCopy
         private static ConfigurationClearSale credencialsClearSale;
         private static FileHandler fileHandler;
 
+        private static ILogger logger;
+
         static void Main(string[] args)
         {
             try
             {
-              
+                logger = Log.LogActive();
+
                 LoadAppSettings();
                 var interval  = Configuration["Interval:value"];
                 var callback = new TimerCallback(TimerCallback);
                 Timer stateTimer = new Timer(callback, null, 0, Convert.ToInt32(interval));
 
                 for (; ; )
-                {
-                    // add a sleep for 100 mSec to reduce CPU usage
-                    Thread.Sleep(100);
+                {   
+                   Thread.Sleep(100);
                 }
             }
             catch (Exception ex)
@@ -46,81 +49,132 @@ namespace ViaVarejo.ClearSale.FileCopy
 
         private static void InitializeProcess()
         {
-            LoadConfigurationApplication();
-            GetFileHandler();
-            ProcessFiles();
+            try
+            {
+                LoadConfigurationApplication();
+                GetFileHandler();
+                ProcessFiles();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         private static void ProcessFiles()
         {
-            var fileProcessor = new FileProcessor(pathSas);
-            var result = fileProcessor.CheckConnectionFilePath();
-
-            if (result)
+            try
             {
-                var fileftplist = fileHandler.ListFileFtpServer();
+                var fileProcessor = new FileProcessor(pathSas);
+                var result = fileProcessor.CheckConnectionFilePath();
 
-                if (fileftplist.Count == 0)
-                    Log.PutEventLog($"Não existem arquivos no servidor FTP", aplicationLogName, "Application");
-
-
-                foreach (var item in fileftplist)
+                if (result)
                 {
-                    Log.PutEventLog($"Iniciando o download do arquivo: {item}", aplicationLogName, "Application");
-                    fileHandler.DownloFile(item);
-                    Log.PutEventLog($"Download do arquivo {item} finalizado", aplicationLogName, "Application");
+                    var fileftplist = fileHandler.ListFileFtpServer();
 
-                    Log.PutEventLog($"Iniciando a remoção do arquivo {item} no servidor FTP", aplicationLogName, "Application");
-                    fileHandler.DeleteFileServer(item);
-                    Log.PutEventLog($"Remoção do arquivo {item} no servidor FTP finalizada", aplicationLogName, "Application");
+                    if (fileftplist.Count == 0)
+                        Log.PutEventLog($"Não existem arquivos no servidor FTP", aplicationLogName, "Application");
 
-                }
+
+                    foreach (var item in fileftplist)
+                    {
+                        Log.PutEventLog($"Iniciando o download do arquivo: {item}", aplicationLogName, "Application");
+                        fileHandler.DownloFile(item);
+                        Log.PutEventLog($"Download do arquivo {item} finalizado", aplicationLogName, "Application");
+
+                        Log.PutEventLog($"Iniciando a remoção do arquivo {item} no servidor FTP", aplicationLogName, "Application");
+                        fileHandler.DeleteFileServer(item);
+                        Log.PutEventLog($"Remoção do arquivo {item} no servidor FTP finalizada", aplicationLogName, "Application");
+
+                    }
             }
             else 
                 Log.PutEventLog("Pasta de arquivos de destino não está criada!", aplicationLogName, "Application");
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message);
+            }
+
         }
 
         private static FileHandler GetFileHandler()
         {
-            fileHandler = new FileHandler(credencialsClearSale, pathSas);
-            return fileHandler;
+            try
+            {
+                fileHandler = new FileHandler(credencialsClearSale, pathSas);
+                return fileHandler;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         private static void LoadConfigurationApplication()
         {
+            try
+            {
+                pathClearSaleFtp = Configuration["ClearSaleFTPSettings:uri"];
+                userClearSaleFtp = Configuration["ClearSaleFTPSettings:user"];
+                passClearSaleFtp = Configuration["ClearSaleFTPSettings:pass"];
+                aplicationLogName = Configuration["AplicationLog:value"];
 
-            pathClearSaleFtp = Configuration["ClearSaleFTPSettings:uri"];
-            userClearSaleFtp = Configuration["ClearSaleFTPSettings:user"];
-            passClearSaleFtp = Configuration["ClearSaleFTPSettings:pass"];
-            aplicationLogName = Configuration["AplicationLog:value"];
-
-            pathSas = Configuration["SasSettings:path"];
+                pathSas = Configuration["SasSettings:path"];
 
 
-            Log.PutEventLog("Carregando configurações da aplicação", aplicationLogName, "Application");
+                Log.PutEventLog("Carregando configurações da aplicação", aplicationLogName, "Application");
 
-            credencialsClearSale = new ConfigurationClearSale(pathClearSaleFtp, portClearSaleFtp, userClearSaleFtp, passClearSaleFtp);
+                credencialsClearSale = new ConfigurationClearSale(pathClearSaleFtp, portClearSaleFtp, userClearSaleFtp, passClearSaleFtp);
 
-            Log.PutEventLog("Configurações da aplicação carregadas com sucesso!", aplicationLogName, "Application");
+                Log.PutEventLog("Configurações da aplicação carregadas com sucesso!", aplicationLogName, "Application");
+
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message);
+            }
+
         }
 
         private static IConfigurationRoot LoadAppSettings()
         {
-            var builder = new ConfigurationBuilder()
-           .SetBasePath(Directory.GetCurrentDirectory())
-           .AddJsonFile("appsettings.json");
+            try
+            {
+                var builder = new ConfigurationBuilder()
+               .SetBasePath(Directory.GetCurrentDirectory())
+               .AddJsonFile("appsettings.json");
 
-            Configuration = builder.Build();
+                Configuration = builder.Build();
 
-            return Configuration;
+                return Configuration;
+
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message);
+            }
+
         }
 
         //Time somente para testar o console
         private static void TimerCallback(Object o)
         {
-            Console.WriteLine($"Iniciando processo FTP {DateTime.Now}");
-            InitializeProcess();
-            GC.Collect();
+            try
+            {
+                logger.LogInformation($"Iniciando processo FTP {DateTime.Now}");
+                //Console.WriteLine($"Iniciando processo FTP {DateTime.Now}");
+                InitializeProcess();
+                GC.Collect();
+
+            }
+            catch (Exception ex)
+            {
+                Log.PutEventLog($"Ocorreu uma falha ao realizar o download do arquivo! {ex.Message}", aplicationLogName, "Application");
+            }
         }
 
     }
